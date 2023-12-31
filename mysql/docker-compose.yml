@@ -1,0 +1,15 @@
+# Use root/example as user/password credentials
+version: "3.1"
+volumes:
+  dbdata:
+services:
+  db:
+    platform: linux/x86_64
+    image: mysql
+    command: ["--default-authentication-plugin=caching_sha2_password", "--max_connections=10000"]
+    restart: always
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - 3306:3306
+    env_file: ../.env

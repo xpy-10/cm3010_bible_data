@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+enum Language {
+    HEBREW
+    ARAMAIC
+}
+
+// Model attributes will follow camel casing naming except for the acronyms in the original data file.
+
+model Word {
+    BHSwordSort             Int     @id
+    paragraphMarker         String?
+    poetryMarker            String?
+    ETCBCgloss              String
+    extendedGloss           String
+    extendedStrongNumber    String
+    language                Language
+    BHSverseSort            Int     // Foreign key
+    KJVverseSort            Int     // Foreign key
+    BHSwordPointed          String  // Foreign key
+    phoneticTranscription   String? // Foreign key
+    clauseId                String  // Foreign key
+    lexemeId                String  // Foreign key
+    StrongNumber            Strong_WordRelation[] // Foreign key
+    morphology              Morphology_Word[]
+    bsb                     BSB?
+
+    // Defining foreign keys
+    BHSlocation_fk            BHSlocation               @relation(fields:[BHSverseSort], references:[BHSverseSort])
+    KJVlocation_fk            KJVlocation               @relation(fields:[KJVverseSort], references:[KJVverseSort])
+    Speech_fk                 Speech?                   @relation(fields:[phoneticTranscription], references:[phoneticTranscription])
+    Script_fk                 Script                    @relation(fields:[BHSwordPointed], references:[BHSwordPointed])
+    Lexeme_fk                 Lexeme                    @relation(fields:[lexemeId], references:[LexemeId])
+    Clause_fk                 Clause                    @relation(fields:[clauseId], references:[clauseId])
+}
+
+model BHSlocation {
+    BHSverseSort    Int     @id
+    BHSbook         Int
+    BHSchapter      Int
+    BHSverse        Int
+    word            Word[]
+}
+
+model KJVlocation {
+    KJVverseSort    Int     @id
+    KJVbook         Int
+    KJVchapter      Int
+    KJVverse        Int
+    word            Word[]
+}
+
+model MorphologyLookup {
+    morphologyCodeLookupVal     String      @id
+    morphologyDetail            String
+    morphology                  Morphology[]
+
+}
+
+model Morphology {
+    morphologyCode          String              @id // foreign key   
+    Morphology_Words        Morphology_Word[]
+    
+    morphologyLookup_fk MorphologyLookup    @relation(fields:[morphologyCode], references: [morphologyCodeLookupVal])
+
+}
+
+model Morphology_Word {
+    morphologyCode          String  // foreign key
+    BHSwordSort             Int     @id // foreign key 
+
+    Morphology_fk           Morphology @relation(fields:[morphologyCode], references:[morphologyCode])
+    Word_fk                 Word       @relation(fields:[BHSwordSort], references:[BHSwordSort])
+    // @@id([morphologyCode, BHSwordSort])
+}
+
+model Clause {
+    clauseId            String     @id
+    clauseType          String     // foreign key
+    word                Word[]
+
+    clauseTypeLookup_fk ClauseTypeLookup    @relation(fields:[clauseType], references:[clauseType])
+}
+
+model ClauseTypeLookup {
+    clauseType      String  @id
+    clauseKind      String  
+    clause          Clause[]
+
+}
+
+model Speech {
+    phoneticTranscription       String  @id  
+    SBLstyleTransliteration     String 
+    word                        Word[]
+}
+
+model Script {
+    BHSwordPointed      String  @id
+    BHSwordConsonantal  String
+    word                Word[]
+}
+
+model Lexeme {
+    LexemeId                String  @id
+    HebrewLexeme            String
+    word                    Word[]
+}
+
+model Strong {
+    StrongNumber        String  @id
+    strong_WordRelation Strong_WordRelation[] 
+}
+
+model Strong_WordRelation {
+    StrongNumber        String // Foreign Key
+    BHSwordSort         Int // Foreign Key
+
+    Strong_fk           Strong @relation(fields:[StrongNumber], references:[StrongNumber])
+    Word_fk             Word   @relation(fields:[BHSwordSort], references:[BHSwordSort])
+    @@id([StrongNumber, BHSwordSort])
+}
+
+
+model BSB {
+    BSBsort         Int     @id
+    BSBtext         String
+    BHSwordSort     Int     @unique // foreign key
+    
+    Word_fk         Word @relation(fields:[BHSwordSort], references:[BHSwordSort])
+}
