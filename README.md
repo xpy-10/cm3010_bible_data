@@ -1,5 +1,10 @@
 # Node Bible Application
 
+Data from [https://github.com/eliranwong/OpenHebrewBible] from OpenHebrewBible by Eliran Wong CC4.0 non-commercial lisence.
+
+This school project aims to normalize the datafile `BHSA-with-extended-features.csv.zip` into a database by running it through the requirements of the normal forms. It should meet NF3 but there are limitations to analyzing it further to put it into BCNF or higher. 
+
+
 To install dependencies make sure to be on the `advanced_databases_midterm` folder and run: 
 
 `npm install`
